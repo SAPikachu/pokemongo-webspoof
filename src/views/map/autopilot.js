@@ -58,12 +58,18 @@ class Autopilot extends Component {
     })
   }
 
-  @action handleSuggestionChange = ({ suggestion: { latlng: { lat, lng } } }) =>
-    autopilot.scheduleTrip(lat, lng)
-      .then(() => { if (!this.isModalOpen) this.isModalOpen = true })
-      .catch(() => this.placesAutocomplete.setVal(null))
+  @action handleSuggestionChange = ({ suggestion }) => {
+    this._suggestion = suggestion;
+    if (!this.isModalOpen) {
+      this.isModalOpen = true;
+    }
+    return Promise.resolve();
+  }
 
   @action handleStartAutopilot = () => {
+    if (this._suggestion) {
+      return this.handleChangeSpeed().then(this.handleStartAutopilot);
+    }
     // reset modal state
     this.placesAutocomplete.setVal(null)
 
@@ -79,6 +85,7 @@ class Autopilot extends Component {
     // reset modal state
     this.placesAutocomplete.setVal(null)
     this.isModalOpen = false
+    this._suggestion = null;
   }
 
   @action handleSelectTravelMode = (name, speed) => () => {
@@ -87,10 +94,18 @@ class Autopilot extends Component {
   }
 
   @action handleChangeSpeed = () => {
-    const { destination: { lat, lng } } = autopilot
     autopilot.pause()
-    autopilot.scheduleTrip(lat, lng)
-      .then(() => { if (!this.isModalOpen) this.isModalOpen = true })
+    if (this._suggestion) {
+      const { latlng: { lat, lng } } = this._suggestion
+      this._suggestion = null
+      return autopilot.scheduleTrip(lat, lng)
+        .then(() => { if (!this.isModalOpen) this.isModalOpen = true })
+        .catch(() => this.placesAutocomplete.setVal(null));
+    } else {
+      const { destination: { lat, lng } } = autopilot
+      return autopilot.scheduleTrip(lat, lng)
+        .then(() => { if (!this.isModalOpen) this.isModalOpen = true })
+    }
   }
 
   renderTogglePause() {
