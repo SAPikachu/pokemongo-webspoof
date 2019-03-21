@@ -45,12 +45,12 @@ class Autopilot {
   }
 
   findDirectionPath = (lat, lng) => new Promise((resolve, reject) => {
+    this.destination = { lat, lng }
     if (isNaN(this.speed)) {
-      this.rawOverviewPath = [{ lat, lng }];
+      this.rawOverviewPath = [{ lat: userLocation[0], lng: userLocation[1] }, { lat, lng }];
       return resolve(this.rawOverviewPath);
     }
     const { google: { maps } } = window
-    this.destination = { lat, lng }
 
     // prepare `directionsRequest` to google map
     const directionsService = new maps.DirectionsService()
