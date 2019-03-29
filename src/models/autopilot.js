@@ -47,7 +47,7 @@ class Autopilot {
   findDirectionPath = (lat, lng) => new Promise((resolve, reject) => {
     this.destination = { lat, lng }
     if (isNaN(this.speed)) {
-      this.rawOverviewPath = [{ lat: userLocation[0], lng: userLocation[1] }, { lat, lng }];
+      this.rawOverviewPath = [{ lat: () => userLocation[0], lng: () => userLocation[1] }, { lat: () => lat, lng: () => lng }];
       return resolve(this.rawOverviewPath);
     }
     const { google: { maps } } = window
